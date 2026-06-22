@@ -338,6 +338,36 @@ plot_grid(plot1, plot3, plot2, plot4, nrow = 2, align = 'hv')
 
 
 
+
+p1s_no_other_policies <- p1s_no_other_policies_old
+p2s_no_other_policies <- p2s_no_other_policies_old
+p3s_no_other_policies <- p3s_no_other_policies_old
+p4s_no_other_policies <- p4s_no_other_policies_old
+
+I_max_t_p1s_no_other_policies <- I_max_t_p1s_no_other_policies_old
+I_max_t_p2s_no_other_policies <- I_max_t_p2s_no_other_policies_old
+I_max_t_p3s_no_other_policies <- I_max_t_p3s_no_other_policies_old
+I_max_t_p4s_no_other_policies <- I_max_t_p4s_no_other_policies_old
+
+I_max_p1s_no_other_policies <- I_max_p1s_no_other_policies_old
+I_max_p2s_no_other_policies <- I_max_p2s_no_other_policies_old
+I_max_p3s_no_other_policies <- I_max_p3s_no_other_policies_old
+I_max_p4s_no_other_policies <- I_max_p4s_no_other_policies_old
+
+B_max_p1s_no_other_policies <- B_max_p1s_no_other_policies_old
+B_max_p2s_no_other_policies <- B_max_p2s_no_other_policies_old
+B_max_p3s_no_other_policies <- B_max_p3s_no_other_policies_old
+B_max_p4s_no_other_policies <- B_max_p4s_no_other_policies_old
+
+deaths_p1s_no_other_policies <- deaths_p1s_no_other_policies_old
+deaths_p2s_no_other_policies <- deaths_p2s_no_other_policies_old
+deaths_p3s_no_other_policies <- deaths_p3s_no_other_policies_old
+deaths_p4s_no_other_policies <- deaths_p4s_no_other_policies_old
+
+
+
+
+
 ### POLICY
 
 parms_policy <- function(p1=0, p2=0, p3=0, p4=0, Tp=0) {
@@ -409,6 +439,8 @@ B_max <- function(p1=0,p2=0,p3=0,p4=0,Tp=0) {
   return(max(ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections,0)+max(365-t,0), y0, ts, odes, parms_policy(p1=p1,p2=p2,p3=p3,p4=p4,Tp=Tp))[,'B']))
 }
 
+reds <- seq(0,.6,.01)
+
 
 
 ### effects of each policy individually
@@ -437,8 +469,6 @@ p1s <- c()
 p2s <- c()
 p3s <- c()
 p4s <- c()
-
-reds <- seq(0,.6,.01)
 
 for (red in reds) {
   print(red)
@@ -504,10 +534,10 @@ plot1 <- data.frame(red=reds,
                     p_type=rep(c('p1','p2','p3','p4'),
                                each=length(reds))) %>%
   ggplot() +
-  ggtitle('no policy effects\non at baseline') +
+  ggtitle('no indirect\nbottom-up effects') +
   geom_line(aes(x=red*100,y=I_max_t,col=p_type)) +
   scale_x_continuous(name='', expand=0) +
-  scale_y_continuous(name='peak time of I (days)', expand=0, limits=c(0,550)) +
+  scale_y_continuous(name='peak time of I (days)', expand=0, limits=c(0,850)) +
   theme_classic() +
   theme(legend.position='none',
         plot.title = element_text(hjust=.5))
@@ -530,8 +560,8 @@ plot3 <- data.frame(red=reds,
                                each=length(reds))) %>%
   ggplot() +
   geom_line(aes(x=red*100,y=B_max,col=p_type)) +
-  scale_x_continuous(name='reduction (%) in deaths due to focal policy effect', expand=0) +
-  scale_y_continuous(name='max value of B', expand=0, limits=c(0,1)) +
+  scale_x_continuous(name='reduction (%) in deaths due to direct policy effect', expand=0) +
+  scale_y_continuous(name='max value of B', expand=0, limits=c(0,.75)) +
   theme_classic() +
   theme(legend.position='none')
 
@@ -539,10 +569,10 @@ plot3 <- data.frame(red=reds,
 
 ### effects of each policy with other policies each reducing 10% of deaths on their own
 
-p1_def <- deaths_red_p1(.1)
-p2_def <- deaths_red_p2(.1)
+p1_def <- 0#deaths_red_p1(.1)
+p2_def <- 0#deaths_red_p2(.1)
 p3_def <- deaths_red_p3(.1)
-p4_def <- deaths_red_p4(.1)
+p4_def <- 0#deaths_red_p4(.1)
 
 I_max_t_p1s <- c()
 I_max_t_p2s <- c()
@@ -569,15 +599,13 @@ p2s <- c()
 p3s <- c()
 p4s <- c()
 
-reds <- seq(0,.6,.01)
-
 for (red in reds) {
   print(red)
   
-  p1 <- deaths_red_p1(red, p1=p1_def, p2=p2_def, p3=p3_def, p4=p4_def)
-  p2 <- deaths_red_p2(red, p1=p1_def, p2=p2_def, p3=p3_def, p4=p4_def)
-  p3 <- deaths_red_p3(red, p1=p1_def, p2=p2_def, p3=p3_def, p4=p4_def)
-  p4 <- deaths_red_p4(red, p1=p1_def, p2=p2_def, p3=p3_def, p4=p4_def)
+  p1 <- deaths_red_p1(red)
+  p2 <- deaths_red_p2(red)
+  p3 <- deaths_red_p3(red)
+  p4 <- deaths_red_p4(red)
   
   p1s <- c(p1s, p1)
   p2s <- c(p2s, p2)
@@ -586,22 +614,22 @@ for (red in reds) {
   
   I_max_t_p1s <- c(I_max_t_p1s, I_max_t(p1=p1, p2=p2_def, p3=p3_def, p4=p4_def))
   I_max_t_p2s <- c(I_max_t_p2s, I_max_t(p1=p1_def, p2=p2, p3=p3_def, p4=p4_def))
-  I_max_t_p3s <- c(I_max_t_p3s, I_max_t(p1=p1_def, p2=p2_def, p3=p3, p4=p4_def))
+  I_max_t_p3s <- c(I_max_t_p3s, I_max_t(p1=p1_def, p2=p2_def, p3=p3+p3_def, p4=p4_def))
   I_max_t_p4s <- c(I_max_t_p4s, I_max_t(p1=p1_def, p2=p2_def, p3=p3_def, p4=p4))
   
   I_max_p1s <- c(I_max_p1s, I_max(p1=p1, p2=p2_def, p3=p3_def, p4=p4_def))
   I_max_p2s <- c(I_max_p2s, I_max(p1=p1_def, p2=p2, p3=p3_def, p4=p4_def))
-  I_max_p3s <- c(I_max_p3s, I_max(p1=p1_def, p2=p2_def, p3=p3, p4=p4_def))
+  I_max_p3s <- c(I_max_p3s, I_max(p1=p1_def, p2=p2_def, p3=p3+p3_def, p4=p4_def))
   I_max_p4s <- c(I_max_p4s, I_max(p1=p1_def, p2=p2_def, p3=p3_def, p4=p4))
   
   B_max_p1s <- c(B_max_p1s, B_max(p1=p1, p2=p2_def, p3=p3_def, p4=p4_def))
   B_max_p2s <- c(B_max_p2s, B_max(p1=p1_def, p2=p2, p3=p3_def, p4=p4_def))
-  B_max_p3s <- c(B_max_p3s, B_max(p1=p1_def, p2=p2_def, p3=p3, p4=p4_def))
+  B_max_p3s <- c(B_max_p3s, B_max(p1=p1_def, p2=p2_def, p3=p3+p3_def, p4=p4_def))
   B_max_p4s <- c(B_max_p4s, B_max(p1=p1_def, p2=p2_def, p3=p3_def, p4=p4))
   
   deaths_p1s <- c(deaths_p1s, deaths_first_wave(p1=p1, p2=p2_def, p3=p3_def, p4=p4_def))
   deaths_p2s <- c(deaths_p2s, deaths_first_wave(p1=p1_def, p2=p2, p3=p3_def, p4=p4_def))
-  deaths_p3s <- c(deaths_p3s, deaths_first_wave(p1=p1_def, p2=p2_def, p3=p3, p4=p4_def))
+  deaths_p3s <- c(deaths_p3s, deaths_first_wave(p1=p1_def, p2=p2_def, p3=p3+p3_def, p4=p4_def))
   deaths_p4s <- c(deaths_p4s, deaths_first_wave(p1=p1_def, p2=p2_def, p3=p3_def, p4=p4))
 }
 
@@ -652,7 +680,7 @@ plot5 <- data.frame(red=reds,
   geom_line(aes(x=red*100,y=I_max_t,col=p_type)) +
   scale_x_continuous(name='', expand=0) +
   scale_y_continuous(name='', expand=0, limits=c(0,9000)) +
-  scale_color_discrete(name='focal policy effect...', labels=c(TeX('reduces transmission ($p_1$)'),
+  scale_color_discrete(name='direct policy effect...', labels=c(TeX('reduces transmission ($p_1$)'),
                                                               TeX('increases testing ($p_2$)'),
                                                               TeX('increases C ($p_3$)'),
                                                               TeX('increases B ($p_4$)'))) +
@@ -673,7 +701,149 @@ plot6 <- data.frame(red=reds,
 
 
 
-plot_grid(plot1, plot2, plot3, plot4, plot5, plot6, byrow=FALSE, nrow = 3, align = 'hv')
+
+
+
+### effects of each policy with other policies each reducing 10% of deaths on their own
+
+p1_def <- 0#deaths_red_p1(.1)
+p2_def <- 0#deaths_red_p2(.1)
+p3_def <- deaths_red_p3(.1)
+p4_def <- deaths_red_p4(.1)
+
+I_max_t_p1s <- c()
+I_max_t_p2s <- c()
+I_max_t_p3s <- c()
+I_max_t_p4s <- c()
+
+I_max_p1s <- c()
+I_max_p2s <- c()
+I_max_p3s <- c()
+I_max_p4s <- c()
+
+B_max_p1s <- c()
+B_max_p2s <- c()
+B_max_p3s <- c()
+B_max_p4s <- c()
+
+deaths_p1s <- c()
+deaths_p2s <- c()
+deaths_p3s <- c()
+deaths_p4s <- c()
+
+p1s <- c()
+p2s <- c()
+p3s <- c()
+p4s <- c()
+
+for (red in reds) {
+  print(red)
+  
+  p1 <- deaths_red_p1(red)
+  p2 <- deaths_red_p2(red)
+  p3 <- deaths_red_p3(red)
+  p4 <- deaths_red_p4(red)
+  
+  p1s <- c(p1s, p1)
+  p2s <- c(p2s, p2)
+  p3s <- c(p3s, p3)
+  p4s <- c(p4s, p4)
+  
+  I_max_t_p1s <- c(I_max_t_p1s, I_max_t(p1=p1, p2=p2_def, p3=p3_def, p4=p4_def))
+  I_max_t_p2s <- c(I_max_t_p2s, I_max_t(p1=p1_def, p2=p2, p3=p3_def, p4=p4_def))
+  I_max_t_p3s <- c(I_max_t_p3s, I_max_t(p1=p1_def, p2=p2_def, p3=p3+p3_def, p4=p4_def))
+  I_max_t_p4s <- c(I_max_t_p4s, I_max_t(p1=p1_def, p2=p2_def, p3=p3_def, p4=p4+p4_def))
+  
+  I_max_p1s <- c(I_max_p1s, I_max(p1=p1, p2=p2_def, p3=p3_def, p4=p4_def))
+  I_max_p2s <- c(I_max_p2s, I_max(p1=p1_def, p2=p2, p3=p3_def, p4=p4_def))
+  I_max_p3s <- c(I_max_p3s, I_max(p1=p1_def, p2=p2_def, p3=p3+p3_def, p4=p4_def))
+  I_max_p4s <- c(I_max_p4s, I_max(p1=p1_def, p2=p2_def, p3=p3_def, p4=p4+p4_def))
+  
+  B_max_p1s <- c(B_max_p1s, B_max(p1=p1, p2=p2_def, p3=p3_def, p4=p4_def))
+  B_max_p2s <- c(B_max_p2s, B_max(p1=p1_def, p2=p2, p3=p3_def, p4=p4_def))
+  B_max_p3s <- c(B_max_p3s, B_max(p1=p1_def, p2=p2_def, p3=p3+p3_def, p4=p4_def))
+  B_max_p4s <- c(B_max_p4s, B_max(p1=p1_def, p2=p2_def, p3=p3_def, p4=p4+p4_def))
+  
+  deaths_p1s <- c(deaths_p1s, deaths_first_wave(p1=p1, p2=p2_def, p3=p3_def, p4=p4_def))
+  deaths_p2s <- c(deaths_p2s, deaths_first_wave(p1=p1_def, p2=p2, p3=p3_def, p4=p4_def))
+  deaths_p3s <- c(deaths_p3s, deaths_first_wave(p1=p1_def, p2=p2_def, p3=p3+p3_def, p4=p4_def))
+  deaths_p4s <- c(deaths_p4s, deaths_first_wave(p1=p1_def, p2=p2_def, p3=p3_def, p4=p4+p4_def))
+}
+
+p1s_high_other_policies <- p1s
+p2s_high_other_policies <- p2s
+p3s_high_other_policies <- p3s
+p4s_high_other_policies <- p4s
+
+I_max_t_p1s_high_other_policies <- I_max_t_p1s
+I_max_t_p2s_high_other_policies <- I_max_t_p2s
+I_max_t_p3s_high_other_policies <- I_max_t_p3s
+I_max_t_p4s_high_other_policies <- I_max_t_p4s
+
+I_max_p1s_high_other_policies <- I_max_p1s
+I_max_p2s_high_other_policies <- I_max_p2s
+I_max_p3s_high_other_policies <- I_max_p3s
+I_max_p4s_high_other_policies <- I_max_p4s
+
+B_max_p1s_high_other_policies <- B_max_p1s
+B_max_p2s_high_other_policies <- B_max_p2s
+B_max_p3s_high_other_policies <- B_max_p3s
+B_max_p4s_high_other_policies <- B_max_p4s
+
+deaths_p1s_high_other_policies <- deaths_p1s
+deaths_p2s_high_other_policies <- deaths_p2s
+deaths_p3s_high_other_policies <- deaths_p3s
+deaths_p4s_high_other_policies <- deaths_p4s
+
+plot7 <- data.frame(red=reds,
+                    I_max_t=c(I_max_t_p1s_high_other_policies, I_max_t_p2s_high_other_policies, I_max_t_p3s_high_other_policies, I_max_t_p4s_high_other_policies),
+                    p_type=rep(c('p1','p2','p3','p4'),
+                               each=length(reds))) %>%
+  ggplot() +
+  ggtitle('with indirect\nbottom-up effects') +
+  geom_line(aes(x=red*100,y=I_max_t,col=p_type)) +
+  scale_x_continuous(name='', expand=0) +
+  scale_y_continuous(name='', expand=0, limits=c(0,850)) +
+  theme_classic() +
+  theme(legend.position='none',
+        plot.title = element_text(hjust=.5))
+
+
+plot8 <- data.frame(red=reds,
+                    I_max_t=c(I_max_p1s_high_other_policies, I_max_p2s_high_other_policies, I_max_p3s_high_other_policies, I_max_p4s_high_other_policies),
+                    p_type=rep(c('p1','p2','p3','p4'),
+                               each=length(reds))) %>%
+  ggplot() +
+  geom_line(aes(x=red*100,y=I_max_t,col=p_type)) +
+  scale_x_continuous(name='', expand=0) +
+  scale_y_continuous(name='', expand=0, limits=c(0,9000)) +
+  scale_color_discrete(name='direct policy effect...', labels=c(TeX('reduces transmission ($p_1$)'),
+                                                               TeX('increases testing ($p_2$)'),
+                                                               TeX('increases C ($p_3$)'),
+                                                               TeX('increases B ($p_4$)'))) +
+  theme_classic()
+
+plot9 <- data.frame(red=reds,
+                    B_max=c(B_max_p1s_high_other_policies, B_max_p2s_high_other_policies, B_max_p3s_high_other_policies, B_max_p4s_high_other_policies),
+                    p_type=rep(c('p1','p2','p3','p4'),
+                               each=length(reds))) %>%
+  ggplot() +
+  geom_line(aes(x=red*100,y=B_max,col=p_type)) +
+  scale_x_continuous(name='', expand=0) +
+  scale_y_continuous(name='', expand=0, limits=c(0,.75)) +
+  theme_classic() +
+  theme(legend.position='none')
+
+
+
+
+
+
+
+
+
+
+plot_grid(plot1, plot2, plot3, plot7, plot8, plot9, byrow=FALSE, nrow = 3, align = 'hv')
 
 # saved as 9x8in
 
@@ -701,7 +871,7 @@ plot2 <- data.frame(red=reds,
   ggplot() +
   ggtitle(expression(p[2])) +
   geom_line(aes(x=red*100,y=p,linetype=other_policies), col=hue_pal()(4)[2]) +
-  scale_x_continuous(name='reduction (%) in deaths due to focal intervention', expand=0) +
+  scale_x_continuous(name='reduction (%) in deaths due to direct policy effect', expand=0) +
   scale_y_continuous(name='',
                      expand=0) +
   theme_classic() +
