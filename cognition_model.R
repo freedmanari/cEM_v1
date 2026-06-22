@@ -1025,7 +1025,7 @@ plot1 <- data.frame(Tp=Tps,
   ggplot() +
   geom_line(aes(x=Tp,y=D365,col=p_type)) +
   scale_x_continuous(name=TeX('policy start time (days)'), expand=0) +
-  scale_y_continuous(name=TeX('deaths after first wave'), expand=0, limits=c(0,6000)) +
+  scale_y_continuous(name=TeX('deaths after first wave'), expand=0, limits=c(2500,6000)) +
   theme_classic() +
   theme(legend.position="none")
 
@@ -1062,7 +1062,7 @@ plot2 <- data.frame(Tp=Tps,
   geom_line(aes(x=Tp,y=I_max_time,col=p_type)) +
   scale_x_continuous(name=TeX('policy start time (days)'), expand=0) +
   scale_y_continuous(name=TeX('peak time of infected population (days)'), expand=0, limits=c(0,365)) +
-  scale_color_discrete(name='policy that...', labels=c(TeX('reduces transmission rate directly ($p_1$)'),
+  scale_color_discrete(name='policy effect that...', labels=c(TeX('reduces transmission rate directly ($p_1$)'),
                                                        TeX('increases testing rate ($p_2$)'),
                                                        TeX('increases risk perception ($p_3$)'),
                                                        TeX('promotes NPI use ($p_4$)'))) +
@@ -1109,7 +1109,7 @@ data.frame(Tp=Tps,
   geom_line(aes(x=Tp,y=I_max,col=p_type)) +
   scale_x_continuous(name=TeX('policy start time (days)'), expand=0) +
   scale_y_continuous(name=TeX('peak time of infected population (days)'), expand=0, limits=c(0,10000)) +
-  scale_color_discrete(name='policy that...', labels=c(TeX('reduces transmission rate directly ($p_1$)'),
+  scale_color_discrete(name='policy effect that...', labels=c(TeX('reduces transmission rate directly ($p_1$)'),
                                                        TeX('increases testing rate ($p_2$)'),
                                                        TeX('increases risk perception ($p_3$)'),
                                                        TeX('promotes NPI use ($p_4$)'))) +
@@ -1150,7 +1150,7 @@ data.frame(Tp=Tps,
   geom_line(aes(x=Tp,y=B_max,col=p_type)) +
   scale_x_continuous(name=TeX('policy start time (days)'), expand=0) +
   scale_y_continuous(name=TeX('peak time of infected population (days)'), expand=0, limits=c(0,1)) +
-  scale_color_discrete(name='policy that...', labels=c(TeX('reduces transmission rate directly ($p_1$)'),
+  scale_color_discrete(name='policy effect that...', labels=c(TeX('reduces transmission rate directly ($p_1$)'),
                                                        TeX('increases testing rate ($p_2$)'),
                                                        TeX('increases risk perception ($p_3$)'),
                                                        TeX('promotes NPI use ($p_4$)'))) +
@@ -1294,3 +1294,90 @@ rbind(cbind(out_p1_ex, freeriding=FALSE),
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### SUPPLEMENT
+
+p1_ex <- deaths_red_p1(.5)
+p2_ex <- deaths_red_p2(.5)
+p3_ex <- deaths_red_p3(.5)
+p4_ex <- deaths_red_p4(.5)
+
+
+reds <- seq(.01,.6,.01)
+
+p1s <- c()
+p2s <- c()
+p3s <- c()
+p4s <- c()
+for (red in reds) {
+  print(red)
+  
+  vec12 <- deaths_red_p_vec(red, c(p1_ex,p2_ex,0,0))
+  p1s <- c(p1s, vec12[1])
+  p2s <- c(p2s, vec12[2])
+  
+  vec34 <- deaths_red_p_vec(red, c(0,0,p3_ex,p4_ex))
+  p3s <- c(p3s, vec34[3])
+  p4s <- c(p4s, vec34[4])
+}
+
+
+combined_ps <- data.frame()
+
+for (red12 in 1:60) {
+  print(reds[red12])
+  for (red34 in 1:60) {
+    for (Tp in c(0,50,100)) {
+      out <- ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections,0)+max(365-t,0), y0, ts, odes, parms_policy(p1=p1s[red12], p2=p2s[red12], p3=p3s[red34], p4=p4s[red34], Tp=Tp))
+      
+      combined_ps <-
+        combined_ps %>% 
+        rbind(data.frame(red12 = round(reds[red12],2),
+                         red34 = round(reds[red34],2),
+                         Tp = Tp,
+                         D365 = unname(tail(out[, 'D'],1)),
+                         I_max = max(out[,'I']),
+                         I_max_time = ts[which.max(out[,'I'])],
+                         B_max = max(out[,'B'])))
+    }
+  }
+}
+
+
+
+Tp_labels <- c('started at very beginning\nof epidemic (t=0)',
+               'started early\nin epidemic (t=50)',
+               'started late\nin epidemic (t=100)')
+names(Tp_labels) <- c('0','50','100')
+
+combined_ps %>% 
+  ggplot() +
+  geom_raster(aes(x=red12,y=red34,fill=B_max), hjust=1, vjust=1) +
+  facet_wrap(~Tp, labeller = as_labeller(Tp_labels), scales='free') +
+  scale_fill_gradientn(name='deaths after\n1 year',colors=rev(rainbow(7)[-7]),
+                       guide=guide_colorbar(frame.colour = 'black', ticks.colour = 'black',title.hjust=.5)) +
+  scale_x_continuous(name=expression(atop(NA,atop(textstyle('strength of top-down policies'),textstyle('(split equally between ' * p[1]*' and '*p[2]*')')))),expand=0) +
+  scale_y_continuous(name=expression(atop(NA,atop(textstyle('strength of bottom-up policies'),textstyle('(split equally between ' * p[3]*' and '*p[4]*')')))),expand=0) +
+  theme(axis.line=element_line(),
+        legend.title=element_text(size=10),
+        legend.position='right',
+        panel.background = element_blank(),
+        strip.background=element_blank(),
+        strip.text=element_text(size=11),
+        aspect.ratio = 1)
