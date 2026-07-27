@@ -217,7 +217,7 @@ plot_grid(plot1, plot2, plot3, plot4, plot5, plot6, ncol = 2, byrow=FALSE, align
 
 
 
-### Fig. S? (outs_no_policy_high_cB)
+### Fig. S1 (outs_no_policy_high_cB)
 
 
 # low sensitivity to epi information, with high sensitivity to behavioral information
@@ -1054,7 +1054,7 @@ plot_grid(plot1, plot2, plot3, plot4, plot5, plot6, byrow=FALSE, nrow = 3, align
 
 
 
-### Fig. S? (total_deaths_red)
+### Fig. S2 (total_deaths_red)
 
 data.frame(red=reds,
            total_red=c(1-deaths_p1s_with_bottom_up_effects/deaths_no_policy,
@@ -1336,94 +1336,6 @@ rbind(cbind(out_p1_ex, freeriding=FALSE),
 
 
 
-### EVERYTHING PAST HERE IS RANDOM BITS OF CODE, ORGANIZATION STILL IN PROGRESS
-
-p1_ex <- deaths_red_p1(.5)
-p2_ex <- deaths_red_p2(.5)
-p3_ex <- deaths_red_p3(.5)
-p4_ex <- deaths_red_p4(.5)
-
-
-reds <- seq(.01,.6,.01)
-
-p1s <- c()
-p2s <- c()
-p3s <- c()
-p4s <- c()
-for (red in reds) {
-  print(red)
-  
-  vec12 <- deaths_red_p_vec(red, c(p1_ex,p2_ex,0,0))
-  p1s <- c(p1s, vec12[1])
-  p2s <- c(p2s, vec12[2])
-  
-  vec34 <- deaths_red_p_vec(red, c(0,0,p3_ex,p4_ex))
-  p3s <- c(p3s, vec34[3])
-  p4s <- c(p4s, vec34[4])
-}
-
-
-combined_ps <- data.frame()
-
-for (red12 in 1:60) {
-  print(reds[red12])
-  for (red34 in 1:60) {
-    for (Tp in c(0,50,100)) {
-      out <- ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections,0)+max(365-t,0), y0, ts, odes, parms_policy(p1=p1s[red12], p2=p2s[red12], p3=p3s[red34], p4=p4s[red34], Tp=Tp))
-      
-      combined_ps <-
-        combined_ps %>% 
-        rbind(data.frame(red12 = round(reds[red12],2),
-                         red34 = round(reds[red34],2),
-                         Tp = Tp,
-                         deaths = unname(tail(out[, 'D'],1)),
-                         I_max = max(out[,'I']),
-                         I_max_t = ts[which.max(out[,'I'])],
-                         B_max = max(out[,'B'])))
-    }
-  }
-}
-
-
-
-Tp_labels <- c('started at very beginning\nof epidemic (t=0)',
-               'started early\nin epidemic (t=50)',
-               'started late\nin epidemic (t=100)')
-names(Tp_labels) <- c('0','50','100')
-
-combined_ps %>% 
-  ggplot() +
-  geom_raster(aes(x=red12,y=red34,fill=B_max), hjust=1, vjust=1) +
-  facet_wrap(~Tp, labeller = as_labeller(Tp_labels), scales='free') +
-  scale_fill_gradientn(name='deaths after\n1 year',colors=rev(rainbow(7)[-7]),
-                       guide=guide_colorbar(frame.colour = 'black', ticks.colour = 'black',title.hjust=.5)) +
-  scale_x_continuous(name=expression(atop(NA,atop(textstyle('strength of top-down policies'),textstyle('(split equally between ' * p[1]*' and '*p[2]*')')))),expand=0) +
-  scale_y_continuous(name=expression(atop(NA,atop(textstyle('strength of bottom-up policies'),textstyle('(split equally between ' * p[3]*' and '*p[4]*')')))),expand=0) +
-  theme(axis.line=element_line(),
-        legend.title=element_text(size=10),
-        legend.position='right',
-        panel.background = element_blank(),
-        strip.background=element_blank(),
-        strip.text=element_text(size=11),
-        aspect.ratio = 1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### Fig. S? (indirect_effects_examples)
 
 
@@ -1631,147 +1543,7 @@ plot_grid(plot1, plot2, plot5, plot6, plot3, plot4, plot7, plot8, ncol = 2, byro
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-## no_policy_heatmaps
-
-
-
-eB_kC <- data.frame()
-
-parms <- parms_no_policy
-for (eB in seq(0, parms_no_policy['eB']*2-parms_no_policy['eB']/50, parms_no_policy['eB']/50)) {
-  print(eB)
-  parms['eB'] <- eB
-  for (kC in seq(0, parms_no_policy['kC']*2-parms_no_policy['kC']/50, parms_no_policy['kC']/50)) {
-    parms['kC'] <- kC
-    
-    out <- ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections,0)+max(365-t,0), y0, ts, odes, parms)
-    
-    eB_kC <-
-      eB_kC %>% 
-      rbind(data.frame(eB = round(eB,2),
-                       kC = round(kC,3),
-                       deaths = unname(tail(out[,'D'],1)),
-                       #I_max_t = ts[which.max(out[,'I'])],
-                       #I_max = max(out[,'I']),
-                       #B_eq = tail(out[,'B'],1),
-                       B_max = max(out[,'B'])))
-  }
-}
-
-
-
-cD_cQ <- data.frame()
-
-parms <- parms_no_policy
-for (cD in seq(0, parms_no_policy['cD']*2-parms_no_policy['cD']/50, parms_no_policy['cD']/50)) {
-  print(cD)
-  parms['cD'] <- cD
-  for (cQ in seq(0, parms_no_policy['cQ']*2-parms_no_policy['cQ']/50, parms_no_policy['cQ']/50)) {
-    parms['cQ'] <- cQ
-    
-    out <- ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections,0)+max(365-t,0), y0, ts, odes, parms)
-    
-    cD_cQ <-
-      cD_cQ %>% 
-      rbind(data.frame(cD = round(cD,7),
-                       cQ = round(cQ,6),
-                       deaths = unname(tail(out[,'D'],1)),
-                       #I_max_t = ts[which.max(out[,'I'])],
-                       #I_max = max(out[,'I']),
-                       #B_eq = tail(out[,'B'],1),
-                       B_max = max(out[,'B'])))
-  }
-}
-
-
-
-plot1 <- eB_kC %>% 
-  ggplot() +
-  ggtitle("varying how \nC & B affect epi variables") +
-  geom_raster(aes(x=eB,y=kC,fill=deaths), hjust=1, vjust=1) +
-  scale_fill_gradientn(name='deaths after\nfirst wave',colors=rev(rainbow(7)[-7]),
-                       limits=c(min(eB_kC$deaths, cD_cQ$deaths), max(eB_kC$deaths, cD_cQ$deaths)),
-                       guide=guide_colorbar(frame.colour = 'black', ticks.colour = 'black',title.hjust=.5)) +
-  scale_x_continuous(name=expression('effect of B on transmission,'~e[B]),expand=0) +
-  scale_y_continuous(name=expression('effect of C on testing,'~k[C]),expand=0) +
-  coord_fixed(10) +
-  theme(axis.line=element_line(),
-        plot.margin=unit(c(0,0,0,0),'cm'),
-        plot.title=element_text(hjust=.5),
-        legend.title=element_text(size=10))
-
-plot2 <- eB_kC %>% 
-  ggplot() +
-  geom_raster(aes(x=eB,y=kC,fill=B_max), hjust=1, vjust=1) +
-  scale_fill_gradientn(name='max value\nof B',colors=rev(rainbow(7)[-7]),
-                       limits=c(min(eB_kC$B_max, cD_cQ$B_max), max(eB_kC$B_max, cD_cQ$B_max)),
-                       guide=guide_colorbar(frame.colour = 'black', ticks.colour = 'black',title.hjust=.5)) +
-  scale_x_continuous(name=expression('effect of B on transmission,'~e[B]),expand=0) +
-  scale_y_continuous(name=expression('effect of C on testing,'~k[C]),expand=0) +
-  coord_fixed(10) +
-  theme(axis.line=element_line(),
-        plot.margin=unit(c(0,0,0,0),'cm'),
-        legend.title=element_text(size=10))
-
-
-
-plot3 <- cD_cQ %>% 
-  ggplot() +
-  ggtitle("varying how\nC affects epi states") +
-  geom_raster(aes(x=cD,y=cQ,fill=deaths), hjust=1, vjust=1) +
-  scale_fill_gradientn(colors=rev(rainbow(7)[-7]),
-                       limits=c(min(eB_kC$deaths, cD_cQ$deaths), max(eB_kC$deaths, cD_cQ$deaths))) +
-  scale_x_continuous(name=expression('effect of D on C,'~c[D]),expand=0) +
-  scale_y_continuous(name=expression('effect of Q on C,'~c[Q]),expand=0, limits=c(0,.0002)) +
-  coord_fixed(.1) +
-  theme(axis.line=element_line(),
-        plot.margin=unit(c(0,0,0,0),'cm'),
-        plot.title=element_text(hjust=.5),
-        legend.position="none")
-
-plot4 <- cD_cQ %>% 
-  ggplot() +
-  geom_raster(aes(x=cD,y=cQ,fill=B_max), hjust=1, vjust=1) +
-  scale_fill_gradientn(colors=rev(rainbow(7)[-7]),
-                       limits=c(min(eB_kC$B_max, cD_cQ$B_max), max(eB_kC$B_max, cD_cQ$B_max))) +
-  scale_x_continuous(name=expression('effect of D on C,'~c[D]),expand=0) +
-  scale_y_continuous(name=expression('effect of Q on C,'~c[Q]),expand=0, limits=c(0,.0002)) +
-  coord_fixed(.1) +
-  theme(axis.line=element_line(),
-        plot.margin=unit(c(0,0,0,0),'cm'),
-        legend.position="none")
-
-
-
-plot_grid(plot1, plot3, plot2, plot4, nrow = 2, align = 'hv')
-# save as 9.5 x 7.5
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### Fig. S3 (cB2)
 
 
 cB2s <- seq(0,.2,.002)
