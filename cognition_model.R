@@ -73,7 +73,7 @@ plot1 <- out %>%
   scale_linetype_manual(name='', values=c(12,'solid'), labels=c('model without C and B','model with C and B')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, .3, 0), 'cm'),
-        legend.position="none",
+        legend.position='none',
         axis.title.x=element_blank(),
         axis.title.y=element_blank(),
         plot.title=element_text(hjust = 0.5))
@@ -93,7 +93,7 @@ plot2 <- out %>%
                      values=c('forestgreen','darkorange1')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, .3, 0), 'cm'),
-        legend.position="none",
+        legend.position='none',
         axis.title.x=element_blank(),
         axis.title.y=element_blank())
 
@@ -119,7 +119,7 @@ plot3 <- data.frame(value=c(Re, impact_of_susceptibles, impact_of_behavior, impa
                      values=c('black','gray70','#ffc178','#a9e78f')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.position="none",
+        legend.position='none',
         axis.title.y=element_blank())
 
 
@@ -246,7 +246,7 @@ plot1 <- out %>%
   scale_linetype_manual(name='', values=c(12,'solid'), labels=c('model without C and B','model with C and B')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, .3, 0), 'cm'),
-        legend.position="none",
+        legend.position='none',
         axis.title.x=element_blank(),
         axis.title.y=element_blank(),
         plot.title=element_text(hjust = 0.5))
@@ -266,7 +266,7 @@ plot2 <- out %>%
                      values=c('forestgreen','darkorange1')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, .3, 0), 'cm'),
-        legend.position="none",
+        legend.position='none',
         axis.title.x=element_blank(),
         axis.title.y=element_blank())
 
@@ -292,7 +292,7 @@ plot3 <- data.frame(value=c(Re, impact_of_susceptibles, impact_of_behavior, impa
                      values=c('black','gray70','#ffc178','#a9e78f')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.position="none",
+        legend.position='none',
         axis.title.y=element_blank())
 
 
@@ -424,21 +424,21 @@ for (epi_to_CB_strength in c(.1,.2,.5,1,2,5,10)) {
 plot1 <- feedback_strengths %>%
   ggplot() +
   geom_line(aes(x=CB_to_epi_strength, y=deaths, color=fct_rev(factor(epi_to_CB_strength)))) +
-  scale_x_continuous(name="relative strength of cognitive-behavioral effects on transmission",expand=0,
-                     labels=c("0",".5","1","1.5","2")) +
-  scale_y_continuous(name="deaths after first wave", expand=0, limits=c(0,7500)) +
-  scale_color_discrete(name="relative sensitivity of\nC to epi information", labels=c("10","5","2","1",".5",".2",".1")) +
+  scale_x_continuous(name='relative strength of cognitive-behavioral effects on transmission',expand=0,
+                     labels=c('0','.5','1','1.5','2')) +
+  scale_y_continuous(name='deaths after first wave', expand=0, limits=c(0,7500)) +
+  scale_color_discrete(name='relative sensitivity of\nC to epi information', labels=c('10','5','2','1','.5','.2','.1')) +
   theme_classic() +
   theme(axis.title.x=element_blank(),
-        legend.position="none")
+        legend.position='none')
 
 plot2 <- feedback_strengths %>%
   ggplot() +
   geom_line(aes(x=CB_to_epi_strength, y=B_max, color=fct_rev(factor(epi_to_CB_strength)))) +
-  scale_x_continuous(name="relative strength of cognitive-behavioral effects on transmission",expand=0,
-                     labels=c("0",".5","1","1.5","2")) +
-  scale_y_continuous(name="max value of B", expand=0, limits=c(0,.5), labels=c("0",".1",".2",".3",".4",".5")) +
-  scale_color_discrete(name="relative sensitivity of\nC to epi information", labels=c("10","5","2","1",".5",".2",".1")) +
+  scale_x_continuous(name='relative strength of cognitive-behavioral effects on transmission',expand=0,
+                     labels=c('0','.5','1','1.5','2')) +
+  scale_y_continuous(name='max value of B', expand=0, limits=c(0,.5), labels=c('0','.1','.2','.3','.4','.5')) +
+  scale_color_discrete(name='relative sensitivity of\nC to epi information', labels=c('10','5','2','1','.5','.2','.1')) +
   theme_classic()
 
 plot_grid(plot1, plot2, ncol=2, align='vh')
@@ -553,8 +553,7 @@ out <-
   pivot_longer(cols=-'time',names_to='var',values_to='value') %>% 
   mutate(policy='yes')
 
-I_max_t <- ts[which.max(pull(filter(out, var=="I"), value))]
-
+I_max_t <- ts[which.max(pull(filter(out, var=='I'), value))]
 
 plot1 <- 
   rbind(out_no_p,
@@ -565,7 +564,7 @@ plot1 <-
          policy=factor(policy, levels=c('no', 'yes'))) %>%
   ggplot() +
   ggtitle(expression(atop(NA,atop('improved ventilation',(p[1]))))) +
-  geom_vline(xintercept=I_max_t, color='gray', linewidth=.4) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(expand=0, limits=c(0,9000)) +
@@ -588,7 +587,7 @@ plot2 <-
   mutate(var=factor(var, levels=c('C','B')),
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray', linewidth=.4) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
@@ -610,7 +609,7 @@ out <-
   mutate(policy='yes')
 
 
-I_max_t <- ts[which.max(pull(filter(out, var=="I"), value))]
+I_max_t <- ts[which.max(pull(filter(out, var=='I'), value))]
 
 plot3 <- 
   rbind(out_no_p,
@@ -621,7 +620,7 @@ plot3 <-
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
   ggtitle(expression(atop(NA,atop('mandatory testing program',(p[2]*','~p[3]))))) +
-  geom_vline(xintercept=I_max_t, color='gray', linewidth=.4) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(expand=0, limits=c(0,9000)) +
@@ -644,7 +643,7 @@ plot4 <-
   mutate(var=factor(var, levels=c('C','B')),
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray', linewidth=.4) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
@@ -667,7 +666,7 @@ out <-
   mutate(policy='yes')
 
 
-I_max_t <- ts[which.max(pull(filter(out, var=="I"), value))]
+I_max_t <- ts[which.max(pull(filter(out, var=='I'), value))]
 
 plot5 <- 
   rbind(out_no_p,
@@ -678,7 +677,7 @@ plot5 <-
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
   ggtitle(expression(atop(NA,atop('promoting risk awareness',(p[3]))))) +
-  geom_vline(xintercept=I_max_t, color='gray', linewidth=.4) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(expand=0, limits=c(0,9000)) +
@@ -701,7 +700,7 @@ plot6 <-
   mutate(var=factor(var, levels=c('C','B')),
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray', linewidth=.4) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
@@ -724,7 +723,7 @@ out <-
   mutate(policy='yes')
 
 
-I_max_t <- ts[which.max(pull(filter(out, var=="I"), value))]
+I_max_t <- ts[which.max(pull(filter(out, var=='I'), value))]
 
 plot7 <- 
   rbind(out_no_p,
@@ -735,12 +734,12 @@ plot7 <-
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
   ggtitle(expression(atop(NA,atop('promoting NPI use',(p[4]*','~p[3]))))) +
-  geom_vline(xintercept=I_max_t, color='gray', linewidth=.4) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(expand=0, limits=c(0,9000)) +
   scale_color_manual(name='', values=c('blue','red','violet'), labels=c('I (infected population)','D (cumulative deaths)','Q (quarantined population)')) +
-  scale_linetype_manual(name='', values=c(12,'solid'), labels=c('no policy','policy')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), guide='none') +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
         legend.text=element_text(size=10),
@@ -757,7 +756,7 @@ plot8 <-
   mutate(var=factor(var, levels=c('C','B')),
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray', linewidth=.4) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
@@ -766,7 +765,11 @@ plot8 <-
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
         axis.title.y=element_blank(),
-        plot.title = element_text(hjust = 0.5, size=18))
+        plot.title = element_text(hjust = 0.5, size=18)) +
+  guides(
+    color = guide_legend(order = 1),
+    linetype = guide_legend(order = 2)
+  )
 
 
 
@@ -1137,7 +1140,7 @@ plot1 <- data.frame(Tp=Tps,
   scale_x_continuous(name=TeX('policy start time (days)'), expand=0) +
   scale_y_continuous(name=TeX('deaths after first wave'), expand=0, limits=c(2500,6000)) +
   theme_classic() +
-  theme(legend.position="none")
+  theme(legend.position='none')
 
 
 
@@ -1336,7 +1339,7 @@ rbind(cbind(out_p1_ex, freeriding=FALSE),
 
 
 
-### Fig. S? (indirect_effects_examples)
+### Fig. S3 (indirect_effects_examples)
 
 
 p1_big <- deaths_red_p1(.5)
@@ -1358,6 +1361,7 @@ out_with_indirect_effects <-
   pivot_longer(cols=-'time',names_to='var',values_to='value') %>% 
   mutate(indirect_effects='yes')
 
+I_max_t <- ts[which.max(pull(filter(out_with_indirect_effects, var=='I'), value))]
 
 plot1 <-
   rbind(out_no_indirect_effects,
@@ -1366,14 +1370,19 @@ plot1 <-
          time<=365) %>% 
   mutate(var=factor(var, levels=c('I','D','Q'))) %>% 
   ggplot() +
+  ggtitle(expression('direct effect from'~p[1])) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=indirect_effects), linewidth=.7) +
-  scale_x_continuous(expand=0) +
+  scale_x_continuous(expand=0, limits=c(0,365)) +
   scale_y_continuous(expand=0, limits=c(0,3000)) +
   scale_color_manual(name='', values=c('blue','red','violet'), labels=c('I (infected population)','D (cumulative deaths)','Q (quarantined population)')) +
-  scale_linetype_manual(name='', values=c('solid',12), labels=c('without indirect effects','with indirect effects')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), labels=c('without indirect effects','with indirect effects')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.text=element_text(size=10))
+        legend.position='none',
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        plot.title = element_text(hjust = 0.5))
 
 plot2 <-
   rbind(out_no_indirect_effects,
@@ -1382,14 +1391,16 @@ plot2 <-
          time<=365) %>% 
   mutate(var=factor(var, levels=c('C','B'))) %>% 
   ggplot() +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=indirect_effects), linewidth=.7) +
-  scale_x_continuous(expand=0) +
+  scale_x_continuous(name='time (days)', expand=0, limits=c(0,365)) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
   scale_color_manual(name='', values=c('forestgreen','darkorange1'), labels=c('C (perceived risk)','B (NPI adoption)')) +
-  scale_linetype_manual(name='', values=c('solid',12), labels=c('without indirect effects','with indirect effects')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), labels=c('without indirect effects','with indirect effects')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.text=element_text(size=10))
+        legend.position='none',
+        axis.title.y=element_blank())
 
 
 
@@ -1405,6 +1416,7 @@ out_with_indirect_effects <-
   pivot_longer(cols=-'time',names_to='var',values_to='value') %>% 
   mutate(indirect_effects='yes')
 
+I_max_t <- ts[which.max(pull(filter(out_with_indirect_effects, var=='I'), value))]
 
 plot3 <-
   rbind(out_no_indirect_effects,
@@ -1413,14 +1425,19 @@ plot3 <-
          time<=365) %>% 
   mutate(var=factor(var, levels=c('I','D','Q'))) %>% 
   ggplot() +
+  ggtitle(expression('direct effect from'~p[2])) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=indirect_effects), linewidth=.7) +
-  scale_x_continuous(expand=0) +
+  scale_x_continuous(expand=0, limits=c(0,365)) +
   scale_y_continuous(expand=0, limits=c(0,3000)) +
   scale_color_manual(name='', values=c('blue','red','violet'), labels=c('I (infected population)','D (cumulative deaths)','Q (quarantined population)')) +
-  scale_linetype_manual(name='', values=c('solid',12), labels=c('without indirect effects','with indirect effects')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), labels=c('without indirect effects','with indirect effects')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.text=element_text(size=10))
+        legend.position='none',
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        plot.title = element_text(hjust = 0.5))
 
 plot4 <-
   rbind(out_no_indirect_effects,
@@ -1429,14 +1446,16 @@ plot4 <-
          time<=365) %>% 
   mutate(var=factor(var, levels=c('C','B'))) %>% 
   ggplot() +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=indirect_effects), linewidth=.7) +
-  scale_x_continuous(expand=0) +
+  scale_x_continuous(name='time (days)', expand=0, limits=c(0,365)) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
   scale_color_manual(name='', values=c('forestgreen','darkorange1'), labels=c('C (perceived risk)','B (NPI adoption)')) +
-  scale_linetype_manual(name='', values=c('solid',12), labels=c('without indirect effects','with indirect effects')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), labels=c('without indirect effects','with indirect effects')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.text=element_text(size=10))
+        legend.position='none',
+        axis.title.y=element_blank())
 
 
 
@@ -1452,6 +1471,7 @@ out_with_indirect_effects <-
   pivot_longer(cols=-'time',names_to='var',values_to='value') %>% 
   mutate(indirect_effects='yes')
 
+I_max_t <- ts[which.max(pull(filter(out_with_indirect_effects, var=='I'), value))]
 
 plot5 <-
   rbind(out_no_indirect_effects,
@@ -1460,14 +1480,19 @@ plot5 <-
          time<=365) %>% 
   mutate(var=factor(var, levels=c('I','D','Q'))) %>% 
   ggplot() +
+  ggtitle(expression('direct effect from'~p[3])) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=indirect_effects), linewidth=.7) +
-  scale_x_continuous(expand=0) +
+  scale_x_continuous(expand=0, limits=c(0,365)) +
   scale_y_continuous(expand=0, limits=c(0,3000)) +
   scale_color_manual(name='', values=c('blue','red','violet'), labels=c('I (infected population)','D (cumulative deaths)','Q (quarantined population)')) +
-  scale_linetype_manual(name='', values=c('solid',12), labels=c('without indirect effects','with indirect effects')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), labels=c('without indirect effects','with indirect effects')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.text=element_text(size=10))
+        legend.position='none',
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        plot.title = element_text(hjust = 0.5))
 
 plot6 <-
   rbind(out_no_indirect_effects,
@@ -1476,14 +1501,16 @@ plot6 <-
          time<=365) %>% 
   mutate(var=factor(var, levels=c('C','B'))) %>% 
   ggplot() +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=indirect_effects), linewidth=.7) +
-  scale_x_continuous(expand=0) +
+  scale_x_continuous(name='time (days)', expand=0, limits=c(0,365)) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
   scale_color_manual(name='', values=c('forestgreen','darkorange1'), labels=c('C (perceived risk)','B (NPI adoption)')) +
-  scale_linetype_manual(name='', values=c('solid',12), labels=c('without indirect effects','with indirect effects')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), labels=c('without indirect effects','with indirect effects')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.text=element_text(size=10))
+        legend.position='none',
+        axis.title.y=element_blank())
 
 
 
@@ -1499,6 +1526,7 @@ out_with_indirect_effects <-
   pivot_longer(cols=-'time',names_to='var',values_to='value') %>% 
   mutate(indirect_effects='yes')
 
+I_max_t <- ts[which.max(pull(filter(out_with_indirect_effects, var=='I'), value))]
 
 plot7 <-
   rbind(out_no_indirect_effects,
@@ -1507,14 +1535,18 @@ plot7 <-
          time<=365) %>% 
   mutate(var=factor(var, levels=c('I','D','Q'))) %>% 
   ggplot() +
+  ggtitle(expression('direct effect from'~p[4])) +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=indirect_effects), linewidth=.7) +
-  scale_x_continuous(expand=0) +
+  scale_x_continuous(expand=0, limits=c(0,365)) +
   scale_y_continuous(expand=0, limits=c(0,3000)) +
   scale_color_manual(name='', values=c('blue','red','violet'), labels=c('I (infected population)','D (cumulative deaths)','Q (quarantined population)')) +
-  scale_linetype_manual(name='', values=c('solid',12), labels=c('without indirect effects','with indirect effects')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), guide='none') +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.text=element_text(size=10))
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        plot.title = element_text(hjust = 0.5))
 
 plot8 <-
   rbind(out_no_indirect_effects,
@@ -1523,17 +1555,24 @@ plot8 <-
          time<=365) %>% 
   mutate(var=factor(var, levels=c('C','B'))) %>% 
   ggplot() +
+  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=indirect_effects), linewidth=.7) +
-  scale_x_continuous(expand=0) +
+  scale_x_continuous(name='time (days)', expand=0, limits=c(0,365)) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
   scale_color_manual(name='', values=c('forestgreen','darkorange1'), labels=c('C (perceived risk)','B (NPI adoption)')) +
-  scale_linetype_manual(name='', values=c('solid',12), labels=c('without indirect effects','with indirect effects')) +
+  scale_linetype_manual(name='', values=c(12,'solid'), labels=c('without indirect effects','with indirect effects')) +
   theme_classic() +
   theme(plot.margin = unit(c(0, 0, 0, 0), 'cm'),
-        legend.text=element_text(size=10))
+        legend.text=element_text(size=10),
+        axis.title.y=element_blank()) +
+  guides(
+    color = guide_legend(order = 1),
+    linetype = guide_legend(order = 2)
+  )
 
 
 plot_grid(plot1, plot2, plot5, plot6, plot3, plot4, plot7, plot8, ncol = 2, byrow=FALSE, align='hv')
+# export as 10x9
 
 
 
@@ -1542,8 +1581,7 @@ plot_grid(plot1, plot2, plot5, plot6, plot3, plot4, plot7, plot8, ncol = 2, byro
 
 
 
-
-### Fig. S3 (cB2)
+### Fig. S4 (cB2)
 
 
 cB2s <- seq(0,.2,.002)
