@@ -12,9 +12,9 @@ odes <- function(t, y, parms) {
     dS_o <- Gamma - beta * ifelse(t > Tp, 1 - p1, 1) * S_o * I_o - mu * S_o
     dE_o <- beta * ifelse(t > Tp, 1 - p1, 1) * S_o * I_o - lambda * E_o - mu * E_o
     dI_o <- lambda * E_o - alpha * I_o - gamma * I_o - ifelse(t > Tp, p2 * I_o, 0) - mu * I_o
-    dD_o <- alpha * I_o
+    dD_o <- alpha * I_o + alphaQ * Q_o
     dR_o <- gamma * I_o + gammaQ * Q_o - mu * R_o
-    dQ_o <- ifelse(t > Tp, p2 * I_o, 0) - gammaQ * Q_o
+    dQ_o <- ifelse(t > Tp, p2 * I_o, 0) - gammaQ * Q_o - alphaQ * Q_o - mu * Q_o
     dS <- Gamma - beta * (1 - eB * B - ifelse(t > Tp, p1, 0)) * S * I - mu * S
     dE <- beta * (1 - eB * B - ifelse(t > Tp, p1, 0)) * S * I - lambda * E - mu * E
     dI <- lambda * E - alpha * I - gamma * I - (kB * B + kC * C + ifelse(t > Tp, p2, 0)) * I - mu * I
@@ -34,7 +34,7 @@ init_infections <- 10
 y0 <- c(S_o=N-init_infections, E_o=init_infections, I_o=0, D_o=0, R_o=0, Q_o=0,
         S=N-init_infections, E=init_infections, I=0, D=0, R=0, Q=0, C=0, B=0)
 
-parms_no_policy <- c(mu=1/(60*365), Gamma=10^5/(60*365), lambda=.3, gamma=.1, gammaQ=.1, alpha=.01, alphaQ=.01, delta=0, Tp=0,
+parms_no_policy <- c(mu=1/(60*365), Gamma=10^5/(60*365), lambda=.3, gamma=.1, gammaQ=.1, alpha=.01, alphaQ=.01, Tp=0,
                      R0=2, eB=.5, kB=0, kC=.05, deltaC=.2, cB=.1, cB2=0,
                      cD=1/10^5, cQ=1/10^4, deltaB=.1, bC=.1,
                      p1=0, p2=0, p3=0, p4=0)
@@ -53,7 +53,7 @@ out_no_policy <- ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections
 
 out <- out_no_policy[1:one_year,]
 
-I_max_t <- ts[which.max(out[,'I'])]
+I_max_t_ex <- ts[which.max(out[,'I'])]
 
 plot1 <- out %>%
   as.data.frame %>% 
@@ -65,7 +65,7 @@ plot1 <- out %>%
          C_B=factor(C_B, levels=c(FALSE,TRUE))) %>% 
   ggplot() +
   ggtitle('low sensitivity to\nepi information') +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var, linetype=C_B), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(name='number of people', expand=0, limits=c(0,12000)) +
@@ -85,7 +85,7 @@ plot2 <- out %>%
   filter(var %in% c('C','B')) %>% 
   mutate(var=factor(var, levels=c('C','B'))) %>% 
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(limits=c(0,1), expand=0) +
@@ -111,7 +111,7 @@ plot3 <- data.frame(value=c(Re, impact_of_susceptibles, impact_of_behavior, impa
                     var=rep(factor(c('Re','impact_of_susceptibles','impact_of_behavior','impact_of_testing'),levels=c('Re','impact_of_susceptibles','impact_of_behavior','impact_of_testing')), each=one_year)) %>% 
   ggplot() +
   geom_hline(yintercept=1, color='gray85', linewidth=.5) +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(limits=c(0,2), expand=0) +
@@ -133,7 +133,7 @@ new_parms['cQ'] <- parms_no_policy['cQ'] * 10
 
 out <- ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections,0)+max(365-t,0), y0, ts, odes, new_parms)[1:one_year,]
 
-I_max_t <- ts[which.max(out[,'I'])]
+I_max_t_ex <- ts[which.max(out[,'I'])]
 
 plot4 <- out %>%
   as.data.frame %>% 
@@ -144,7 +144,7 @@ plot4 <- out %>%
   mutate(var=factor(var, levels=c('I','D','Q'))) %>% 
   ggplot() +
   ggtitle('low sensitivity to\nepi information') +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var, linetype=C_B), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(name='number of people', expand=0, limits=c(0,12000)) +
@@ -166,7 +166,7 @@ plot5 <- out %>%
   filter(var %in% c('C','B')) %>% 
   mutate(var=factor(var, levels=c('C','B'))) %>% 
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(limits=c(0,1), expand=0) +
@@ -193,7 +193,7 @@ plot6 <- data.frame(value=c(Re, impact_of_susceptibles, impact_of_behavior, impa
                     var=rep(factor(c('Re','impact_of_susceptibles','impact_of_behavior','impact_of_testing'),levels=c('Re','impact_of_susceptibles','impact_of_behavior','impact_of_testing')), each=one_year)) %>% 
   ggplot() +
   geom_hline(yintercept=1, color='gray85', linewidth=.5) +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(limits=c(0,2), expand=0) +
@@ -227,7 +227,7 @@ new_parms['cB'] <- parms_no_policy['cB'] * 10
 
 out <- ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections,0)+max(365-t,0), y0, ts, odes, new_parms)[1:one_year,]
 
-I_max_t <- ts[which.max(out[,'I'])]
+I_max_t_ex <- ts[which.max(out[,'I'])]
 
 plot1 <- out %>%
   as.data.frame %>% 
@@ -238,7 +238,7 @@ plot1 <- out %>%
   mutate(var=factor(var, levels=c('I','D','Q'))) %>% 
   ggplot() +
   ggtitle('low sensitivity to\nepi information') +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var, linetype=C_B), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(name='number of people', expand=0, limits=c(0,12000)) +
@@ -258,7 +258,7 @@ plot2 <- out %>%
   filter(var %in% c('C','B')) %>% 
   mutate(var=factor(var, levels=c('C','B'))) %>% 
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(limits=c(0,1), expand=0) +
@@ -284,7 +284,7 @@ plot3 <- data.frame(value=c(Re, impact_of_susceptibles, impact_of_behavior, impa
                     var=rep(factor(c('Re','impact_of_susceptibles','impact_of_behavior','impact_of_testing'),levels=c('Re','impact_of_susceptibles','impact_of_behavior','impact_of_testing')), each=one_year)) %>% 
   ggplot() +
   geom_hline(yintercept=1, color='gray85', linewidth=.5) +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(limits=c(0,2), expand=0) +
@@ -307,7 +307,7 @@ new_parms['cB'] <- parms_no_policy['cB'] * 10
 
 out <- ode(rootfun=function(t, y, parms) max(y[8]+y[9]-init_infections,0)+max(365-t,0), y0, ts, odes, new_parms)[1:one_year,]
 
-I_max_t <- ts[which.max(out[,'I'])]
+I_max_t_ex <- ts[which.max(out[,'I'])]
 
 plot4 <- out %>%
   as.data.frame %>% 
@@ -318,7 +318,7 @@ plot4 <- out %>%
   mutate(var=factor(var, levels=c('I','D','Q'))) %>% 
   ggplot() +
   ggtitle('high sensitivity to\nepi information') +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var, linetype=C_B), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(name='number of people', expand=0, limits=c(0,12000)) +
@@ -340,7 +340,7 @@ plot5 <- out %>%
   filter(var %in% c('C','B')) %>% 
   mutate(var=factor(var, levels=c('C','B'))) %>% 
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(limits=c(0,1), expand=0) +
@@ -367,7 +367,7 @@ plot6 <- data.frame(value=c(Re, impact_of_susceptibles, impact_of_behavior, impa
                     var=rep(factor(c('Re','impact_of_susceptibles','impact_of_behavior','impact_of_testing'),levels=c('Re','impact_of_susceptibles','impact_of_behavior','impact_of_testing')), each=one_year)) %>% 
   ggplot() +
   geom_hline(yintercept=1, color='gray85', linewidth=.5) +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.5) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.5) +
   geom_line(aes(x=time, y=value, color=var), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(limits=c(0,2), expand=0) +
@@ -414,7 +414,7 @@ for (epi_to_CB_strength in c(.1,.2,.5,1,2,5,10)) {
       rbind(data.frame(epi_to_CB_strength = epi_to_CB_strength,
                        CB_to_epi_strength = round(CB_to_epi_strength,2),
                        deaths = unname(tail(out[,'D'],1)),
-                       I_max_t = ts[which.max(out[,'I'])],
+                       I_max_t_ex = ts[which.max(out[,'I'])],
                        I_max = max(out[,'I']),
                        B_eq = tail(out[,'B'],1),
                        B_max = max(out[,'B'])))
@@ -553,7 +553,7 @@ out <-
   pivot_longer(cols=-'time',names_to='var',values_to='value') %>% 
   mutate(policy='yes')
 
-I_max_t <- ts[which.max(pull(filter(out, var=='I'), value))]
+I_max_t_ex <- ts[which.max(pull(filter(out, var=='I'), value))]
 
 plot1 <- 
   rbind(out_no_p,
@@ -564,7 +564,7 @@ plot1 <-
          policy=factor(policy, levels=c('no', 'yes'))) %>%
   ggplot() +
   ggtitle(expression(atop(NA,atop('improved ventilation',(p[1]))))) +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(expand=0, limits=c(0,9000)) +
@@ -587,7 +587,7 @@ plot2 <-
   mutate(var=factor(var, levels=c('C','B')),
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
@@ -609,7 +609,7 @@ out <-
   mutate(policy='yes')
 
 
-I_max_t <- ts[which.max(pull(filter(out, var=='I'), value))]
+I_max_t_ex <- ts[which.max(pull(filter(out, var=='I'), value))]
 
 plot3 <- 
   rbind(out_no_p,
@@ -620,7 +620,7 @@ plot3 <-
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
   ggtitle(expression(atop(NA,atop('mandatory testing program',(p[2]*','~p[3]))))) +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(expand=0, limits=c(0,9000)) +
@@ -643,7 +643,7 @@ plot4 <-
   mutate(var=factor(var, levels=c('C','B')),
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
@@ -666,7 +666,7 @@ out <-
   mutate(policy='yes')
 
 
-I_max_t <- ts[which.max(pull(filter(out, var=='I'), value))]
+I_max_t_ex <- ts[which.max(pull(filter(out, var=='I'), value))]
 
 plot5 <- 
   rbind(out_no_p,
@@ -677,7 +677,7 @@ plot5 <-
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
   ggtitle(expression(atop(NA,atop('promoting risk awareness',(p[3]))))) +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(expand=0, limits=c(0,9000)) +
@@ -700,7 +700,7 @@ plot6 <-
   mutate(var=factor(var, levels=c('C','B')),
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
@@ -723,7 +723,7 @@ out <-
   mutate(policy='yes')
 
 
-I_max_t <- ts[which.max(pull(filter(out, var=='I'), value))]
+I_max_t_ex <- ts[which.max(pull(filter(out, var=='I'), value))]
 
 plot7 <- 
   rbind(out_no_p,
@@ -734,7 +734,7 @@ plot7 <-
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
   ggtitle(expression(atop(NA,atop('promoting NPI use',(p[4]*','~p[3]))))) +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(expand=0) +
   scale_y_continuous(expand=0, limits=c(0,9000)) +
@@ -756,7 +756,7 @@ plot8 <-
   mutate(var=factor(var, levels=c('C','B')),
          policy=factor(policy, levels=c('no','yes'))) %>%
   ggplot() +
-  geom_vline(xintercept=I_max_t, color='gray85', linewidth=.4) +
+  geom_vline(xintercept=I_max_t_ex, color='gray85', linewidth=.4) +
   geom_line(aes(x=time, y=value, color=var, linetype=policy), linewidth=.7) +
   scale_x_continuous(name='time (days)', expand=0) +
   scale_y_continuous(expand=0, limits=c(0,1)) +
